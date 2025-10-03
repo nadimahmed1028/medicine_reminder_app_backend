@@ -1,0 +1,17 @@
+{
+    "workbench.colorTheme": "Learn with Sumit Official Theme",
+    "editor.fontSize": 20,
+    "editor.formatOnPaste": true,
+    "files.autoSave": "afterDelay",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "[javascript]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": null
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+        "source.organizeImports": "explicit"
+    },
+    "eslint.alwaysShowStatus": true
+}
