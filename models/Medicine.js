@@ -6,7 +6,7 @@ const MedicineSchema = new mongoose.Schema({
         required: true,
     },
     frequency: {
-        type: String,
+        type: Number,
         required: true,
     },
     startTime: {
@@ -18,7 +18,8 @@ const MedicineSchema = new mongoose.Schema({
         required: true,
     },
     userId: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // reference to User model
         required: true,
     },
     schedule: {

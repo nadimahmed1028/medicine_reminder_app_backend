@@ -1,14 +1,17 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable no-plusplus */
 /* eslint-disable object-curly-newline */
 /* eslint-disable no-use-before-define */
 const express = require('express');
 
 const router = express.Router();
 const Medicine = require('../models/Medicine');
+const auth = require('../middleware/authMiddleware');
 
-// Create a new medicine reminder
-router.post('/reminders', async (req, res) => {
+// CREATE a medicine reminder (protected)
+router.post('/reminders', auth, async (req, res) => {
     try {
-        const { name, frequency, startTime, minInterval, userId } = req.body;
+        const { name, frequency, startTime, minInterval } = req.body;
 
         const schedule = calculateSchedule(startTime, frequency, minInterval);
 
@@ -17,69 +20,62 @@ router.post('/reminders', async (req, res) => {
             frequency,
             startTime,
             minInterval,
-            userId,
+            userId: req.user, // Use user ID from JWT
             schedule,
         });
 
         await newMedicine.save();
         res.status(201).json(newMedicine);
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Read all reminders for a specific user
-router.get('/reminders/:userId', async (req, res) => {
+// GET reminders for authenticated user
+router.get('/reminders', auth, async (req, res) => {
     try {
-        const medicines = await Medicine.find({ userId: req.params.userId });
+        const medicines = await Medicine.find({ userId: req.user });
         res.json(medicines);
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Update a medicine reminder
-router.put('/reminders/:id', async (req, res) => {
+// UPDATE reminder (protected)
+router.put('/reminders/:id', auth, async (req, res) => {
     try {
         const { name, frequency, startTime, minInterval } = req.body;
-        const updatedMedicine = await Medicine.findByIdAndUpdate(
-            req.params.id,
-            {
-                name,
-                frequency,
-                startTime,
-                minInterval,
-            },
-            // eslint-disable-next-line comma-dangle
+        const updatedMedicine = await Medicine.findOneAndUpdate(
+            { _id: req.params.id, userId: req.user },
+            { name, frequency, startTime, minInterval },
             { new: true }
         );
         res.json(updatedMedicine);
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
-// Delete a medicine reminder
-router.delete('/reminders/:id', async (req, res) => {
+// DELETE reminder (protected)
+router.delete('/reminders/:id', auth, async (req, res) => {
     try {
-        await Medicine.findByIdAndDelete(req.params.id);
+        await Medicine.findOneAndDelete({ _id: req.params.id, userId: req.user });
         res.json({ message: 'Reminder deleted' });
-    } catch (error) {
-        console.error(error);
+    } catch (err) {
+        console.error(err);
         res.status(500).json({ message: 'Server error' });
     }
 });
 
+// Helper function for schedule calculation
 function calculateSchedule(startTime, frequency, minInterval) {
     const schedule = [];
     const startDate = new Date(`2022-01-01T${startTime}:00`);
 
-    // Example: Generate schedule for 3 times daily (you can adjust based on frequency and interval)
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < frequency; i++) {
         const reminderTime = new Date(startDate);
         reminderTime.setHours(reminderTime.getHours() + minInterval * i);
         schedule.push(reminderTime);
