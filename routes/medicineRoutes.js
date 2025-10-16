@@ -89,7 +89,7 @@ function calculateSchedule(startDate, startTime, frequency, minInterval) {
 
     start.setHours(hours, minutes, 0, 0);
 
-    start.setMinutes(start.getMinutes() - start.getTimezoneOffset());
+    start.setMinutes(start.getMinutes());
 
     for (let i = 0; i < frequency; i++) {
         const doseTime = new Date(start);
